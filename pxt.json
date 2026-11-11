@@ -1,0 +1,13 @@
+{
+  "name": "microbit-english-speech-engine",
+  "version": "1.0.0",
+  "description": "A micro:bit MakeCode extension that sends word and pronunciation requests to a companion computer speech bridge.",
+  "dependencies": {
+    "core": "*"
+  },
+  "files": [
+    "main.ts",
+    "dictionary.ts"
+  ],
+  "testFiles": []
+}

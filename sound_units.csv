@@ -1,0 +1,101 @@
+unit_id,phonetic_symbol,unit_type,description,example_word,notes
+U001,B,phoneme,ARPAbet consonant phoneme B,bat,Canonical General American English phoneme; CMU ARPAbet.
+U002,CH,phoneme,ARPAbet consonant phoneme CH,chair,Canonical General American English phoneme; CMU ARPAbet.
+U003,D,phoneme,ARPAbet consonant phoneme D,dog,Canonical General American English phoneme; CMU ARPAbet.
+U004,DH,phoneme,ARPAbet consonant phoneme DH,this,Canonical General American English phoneme; CMU ARPAbet.
+U005,F,phoneme,ARPAbet consonant phoneme F,fish,Canonical General American English phoneme; CMU ARPAbet.
+U006,G,phoneme,ARPAbet consonant phoneme G,go,Canonical General American English phoneme; CMU ARPAbet.
+U007,HH,phoneme,ARPAbet consonant phoneme HH,hat,Canonical General American English phoneme; CMU ARPAbet.
+U008,JH,phoneme,ARPAbet consonant phoneme JH,jam,Canonical General American English phoneme; CMU ARPAbet.
+U009,K,phoneme,ARPAbet consonant phoneme K,cat,Canonical General American English phoneme; CMU ARPAbet.
+U010,L,phoneme,ARPAbet consonant phoneme L,love,Canonical General American English phoneme; CMU ARPAbet.
+U011,M,phoneme,ARPAbet consonant phoneme M,man,Canonical General American English phoneme; CMU ARPAbet.
+U012,N,phoneme,ARPAbet consonant phoneme N,no,Canonical General American English phoneme; CMU ARPAbet.
+U013,NG,phoneme,ARPAbet consonant phoneme NG,sing,Canonical General American English phoneme; CMU ARPAbet.
+U014,P,phoneme,ARPAbet consonant phoneme P,pen,Canonical General American English phoneme; CMU ARPAbet.
+U015,R,phoneme,ARPAbet consonant phoneme R,red,Canonical General American English phoneme; CMU ARPAbet.
+U016,S,phoneme,ARPAbet consonant phoneme S,sun,Canonical General American English phoneme; CMU ARPAbet.
+U017,SH,phoneme,ARPAbet consonant phoneme SH,ship,Canonical General American English phoneme; CMU ARPAbet.
+U018,T,phoneme,ARPAbet consonant phoneme T,top,Canonical General American English phoneme; CMU ARPAbet.
+U019,TH,phoneme,ARPAbet consonant phoneme TH,thin,Canonical General American English phoneme; CMU ARPAbet.
+U020,V,phoneme,ARPAbet consonant phoneme V,van,Canonical General American English phoneme; CMU ARPAbet.
+U021,W,phoneme,ARPAbet consonant phoneme W,wet,Canonical General American English phoneme; CMU ARPAbet.
+U022,Y,phoneme,ARPAbet consonant phoneme Y,yes,Canonical General American English phoneme; CMU ARPAbet.
+U023,Z,phoneme,ARPAbet consonant phoneme Z,zoo,Canonical General American English phoneme; CMU ARPAbet.
+U024,ZH,phoneme,ARPAbet consonant phoneme ZH,measure,Canonical General American English phoneme; CMU ARPAbet.
+U025,AA0,stressed_vowel,"ARPAbet vowel AA, stress level 0",father,Stress digit follows CMU Pronouncing Dictionary convention.
+U026,AA1,stressed_vowel,"ARPAbet vowel AA, stress level 1",father,Stress digit follows CMU Pronouncing Dictionary convention.
+U027,AA2,stressed_vowel,"ARPAbet vowel AA, stress level 2",father,Stress digit follows CMU Pronouncing Dictionary convention.
+U028,AE0,stressed_vowel,"ARPAbet vowel AE, stress level 0",cat,Stress digit follows CMU Pronouncing Dictionary convention.
+U029,AE1,stressed_vowel,"ARPAbet vowel AE, stress level 1",cat,Stress digit follows CMU Pronouncing Dictionary convention.
+U030,AE2,stressed_vowel,"ARPAbet vowel AE, stress level 2",cat,Stress digit follows CMU Pronouncing Dictionary convention.
+U031,AH0,stressed_vowel,"ARPAbet vowel AH, stress level 0",about,Stress digit follows CMU Pronouncing Dictionary convention.
+U032,AH1,stressed_vowel,"ARPAbet vowel AH, stress level 1",about,Stress digit follows CMU Pronouncing Dictionary convention.
+U033,AH2,stressed_vowel,"ARPAbet vowel AH, stress level 2",about,Stress digit follows CMU Pronouncing Dictionary convention.
+U034,AO0,stressed_vowel,"ARPAbet vowel AO, stress level 0",thought,Stress digit follows CMU Pronouncing Dictionary convention.
+U035,AO1,stressed_vowel,"ARPAbet vowel AO, stress level 1",thought,Stress digit follows CMU Pronouncing Dictionary convention.
+U036,AO2,stressed_vowel,"ARPAbet vowel AO, stress level 2",thought,Stress digit follows CMU Pronouncing Dictionary convention.
+U037,AW0,stressed_vowel,"ARPAbet vowel AW, stress level 0",out,Stress digit follows CMU Pronouncing Dictionary convention.
+U038,AW1,stressed_vowel,"ARPAbet vowel AW, stress level 1",out,Stress digit follows CMU Pronouncing Dictionary convention.
+U039,AW2,stressed_vowel,"ARPAbet vowel AW, stress level 2",out,Stress digit follows CMU Pronouncing Dictionary convention.
+U040,AY0,stressed_vowel,"ARPAbet vowel AY, stress level 0",my,Stress digit follows CMU Pronouncing Dictionary convention.
+U041,AY1,stressed_vowel,"ARPAbet vowel AY, stress level 1",my,Stress digit follows CMU Pronouncing Dictionary convention.
+U042,AY2,stressed_vowel,"ARPAbet vowel AY, stress level 2",my,Stress digit follows CMU Pronouncing Dictionary convention.
+U043,EH0,stressed_vowel,"ARPAbet vowel EH, stress level 0",bed,Stress digit follows CMU Pronouncing Dictionary convention.
+U044,EH1,stressed_vowel,"ARPAbet vowel EH, stress level 1",bed,Stress digit follows CMU Pronouncing Dictionary convention.
+U045,EH2,stressed_vowel,"ARPAbet vowel EH, stress level 2",bed,Stress digit follows CMU Pronouncing Dictionary convention.
+U046,ER0,stressed_vowel,"ARPAbet vowel ER, stress level 0",bird,Stress digit follows CMU Pronouncing Dictionary convention.
+U047,ER1,stressed_vowel,"ARPAbet vowel ER, stress level 1",bird,Stress digit follows CMU Pronouncing Dictionary convention.
+U048,ER2,stressed_vowel,"ARPAbet vowel ER, stress level 2",bird,Stress digit follows CMU Pronouncing Dictionary convention.
+U049,EY0,stressed_vowel,"ARPAbet vowel EY, stress level 0",day,Stress digit follows CMU Pronouncing Dictionary convention.
+U050,EY1,stressed_vowel,"ARPAbet vowel EY, stress level 1",day,Stress digit follows CMU Pronouncing Dictionary convention.
+U051,EY2,stressed_vowel,"ARPAbet vowel EY, stress level 2",day,Stress digit follows CMU Pronouncing Dictionary convention.
+U052,IH0,stressed_vowel,"ARPAbet vowel IH, stress level 0",sit,Stress digit follows CMU Pronouncing Dictionary convention.
+U053,IH1,stressed_vowel,"ARPAbet vowel IH, stress level 1",sit,Stress digit follows CMU Pronouncing Dictionary convention.
+U054,IH2,stressed_vowel,"ARPAbet vowel IH, stress level 2",sit,Stress digit follows CMU Pronouncing Dictionary convention.
+U055,IY0,stressed_vowel,"ARPAbet vowel IY, stress level 0",see,Stress digit follows CMU Pronouncing Dictionary convention.
+U056,IY1,stressed_vowel,"ARPAbet vowel IY, stress level 1",see,Stress digit follows CMU Pronouncing Dictionary convention.
+U057,IY2,stressed_vowel,"ARPAbet vowel IY, stress level 2",see,Stress digit follows CMU Pronouncing Dictionary convention.
+U058,OW0,stressed_vowel,"ARPAbet vowel OW, stress level 0",go,Stress digit follows CMU Pronouncing Dictionary convention.
+U059,OW1,stressed_vowel,"ARPAbet vowel OW, stress level 1",go,Stress digit follows CMU Pronouncing Dictionary convention.
+U060,OW2,stressed_vowel,"ARPAbet vowel OW, stress level 2",go,Stress digit follows CMU Pronouncing Dictionary convention.
+U061,OY0,stressed_vowel,"ARPAbet vowel OY, stress level 0",boy,Stress digit follows CMU Pronouncing Dictionary convention.
+U062,OY1,stressed_vowel,"ARPAbet vowel OY, stress level 1",boy,Stress digit follows CMU Pronouncing Dictionary convention.
+U063,OY2,stressed_vowel,"ARPAbet vowel OY, stress level 2",boy,Stress digit follows CMU Pronouncing Dictionary convention.
+U064,UH0,stressed_vowel,"ARPAbet vowel UH, stress level 0",book,Stress digit follows CMU Pronouncing Dictionary convention.
+U065,UH1,stressed_vowel,"ARPAbet vowel UH, stress level 1",book,Stress digit follows CMU Pronouncing Dictionary convention.
+U066,UH2,stressed_vowel,"ARPAbet vowel UH, stress level 2",book,Stress digit follows CMU Pronouncing Dictionary convention.
+U067,UW0,stressed_vowel,"ARPAbet vowel UW, stress level 0",blue,Stress digit follows CMU Pronouncing Dictionary convention.
+U068,UW1,stressed_vowel,"ARPAbet vowel UW, stress level 1",blue,Stress digit follows CMU Pronouncing Dictionary convention.
+U069,UW2,stressed_vowel,"ARPAbet vowel UW, stress level 2",blue,Stress digit follows CMU Pronouncing Dictionary convention.
+U070,B_AE,optional_diphone,Optional coarticulation unit B transitioning into AE,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U071,K_AE,optional_diphone,Optional coarticulation unit K transitioning into AE,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U072,D_AH,optional_diphone,Optional coarticulation unit D transitioning into AH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U073,M_IY,optional_diphone,Optional coarticulation unit M transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U074,S_IH,optional_diphone,Optional coarticulation unit S transitioning into IH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U075,T_AA,optional_diphone,Optional coarticulation unit T transitioning into AA,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U076,R_EH,optional_diphone,Optional coarticulation unit R transitioning into EH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U077,L_OW,optional_diphone,Optional coarticulation unit L transitioning into OW,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U078,W_AH,optional_diphone,Optional coarticulation unit W transitioning into AH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U079,F_AO,optional_diphone,Optional coarticulation unit F transitioning into AO,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U080,P_IH,optional_diphone,Optional coarticulation unit P transitioning into IH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U081,N_IY,optional_diphone,Optional coarticulation unit N transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U082,G_OW,optional_diphone,Optional coarticulation unit G transitioning into OW,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U083,SH_IY,optional_diphone,Optional coarticulation unit SH transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U084,CH_EH,optional_diphone,Optional coarticulation unit CH transitioning into EH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U085,TH_AE,optional_diphone,Optional coarticulation unit TH transitioning into AE,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U086,DH_AH,optional_diphone,Optional coarticulation unit DH transitioning into AH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U087,V_EH,optional_diphone,Optional coarticulation unit V transitioning into EH,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U088,Z_IY,optional_diphone,Optional coarticulation unit Z transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U089,HH_AE,optional_diphone,Optional coarticulation unit HH transitioning into AE,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U090,K_IY,optional_diphone,Optional coarticulation unit K transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U091,B_OW,optional_diphone,Optional coarticulation unit B transitioning into OW,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U092,M_AE,optional_diphone,Optional coarticulation unit M transitioning into AE,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U093,S_AA,optional_diphone,Optional coarticulation unit S transitioning into AA,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U094,T_IY,optional_diphone,Optional coarticulation unit T transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U095,R_AA,optional_diphone,Optional coarticulation unit R transitioning into AA,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U096,L_IY,optional_diphone,Optional coarticulation unit L transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U097,N_AE,optional_diphone,Optional coarticulation unit N transitioning into AE,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U098,P_AA,optional_diphone,Optional coarticulation unit P transitioning into AA,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U099,D_IY,optional_diphone,Optional coarticulation unit D transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.
+U100,W_IY,optional_diphone,Optional coarticulation unit W transitioning into IY,example,Reserved optional transition unit; not used by canonical dictionary entries.

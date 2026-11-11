@@ -1,0 +1,11 @@
+[project]
+name = "microbit-english-speech-engine"
+version = "1.0.0"
+description = "Host-backed English speech and pronunciation dictionary for BBC micro:bit"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dependencies = ["pyserial>=3.5", "pyttsx3>=2.90"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
