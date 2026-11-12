@@ -11,8 +11,18 @@ namespace englishSpeech {
     let connected = false;
 
     function cleanField(value: string): string {
-        // The serial protocol is tab-delimited; reject line breaks/tabs.
-        return value.replace(/\t/g, " ").replace(/\r/g, " ").replace(/\n/g, " ");
+        // MakeCode's micro:bit compiler does not support regular expressions.
+        // Replace protocol control characters with spaces using basic string APIs.
+        let cleaned = "";
+        for (let i = 0; i < value.length; i++) {
+            const ch = value.charAt(i);
+            if (ch == "\t" || ch == "\r" || ch == "\n") {
+                cleaned += " ";
+            } else {
+                cleaned += ch;
+            }
+        }
+        return cleaned;
     }
 
     function sendCommand(command: string): void {
