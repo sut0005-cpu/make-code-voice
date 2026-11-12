@@ -1,30 +1,46 @@
-# On-device speech (primary mode)
+# On-device speech through the micro:bit speaker
 
-The primary speech engine runs as **MicroPython firmware on the micro:bit**. It uses the official MicroPython `speech` module, a compact SAM-derived formant synthesizer. Text is converted to phonemes and audio is generated locally by the board. It does not call `pyttsx3`, a cloud API, or a PC speech service.
+The primary speech engine runs as **MicroPython firmware on the micro:bit**. It imports the official `speech` module and generates the speech audio locally on the board. It does not use `pyttsx3`, `bridge.py`, a cloud API, or a connected computer.
 
 ## Hardware
 
-- **micro:bit V2:** use the built-in speaker.
-- **micro:bit V1:** connect a small speaker or headphones between P0 and GND. The V1 board has no built-in speaker.
+- **micro:bit V2:** speech plays through the built-in speaker.
+- **micro:bit V1:** connect a small speaker or headphones between P0 and GND.
 
 ## Flash and run
 
-1. Open the official micro:bit MicroPython editor or another supported MicroPython editor.
-2. Select the correct micro:bit MicroPython firmware/device target.
-3. Copy `main.py` and `onboard_dictionary.py` to the device (or combine them into one `main.py` if your editor only supports one file).
-4. Reset the board. It speaks a greeting at startup.
-5. Press A for a greeting, B to cycle through example words, or touch the V2 logo to hear the dictionary count.
+1. Open the [micro:bit Python Editor](https://python.microbit.org/).
+2. Create a MicroPython project for your board.
+3. Add `main.py` and `onboard_dictionary.py` from this repository.
+4. Flash the program to the micro:bit.
+5. It speaks a greeting after startup. Press A for another greeting or B to hear demo words.
 
-The on-board dictionary contains 750 CMU ARPAbet lookup entries. To keep RAM overhead lower, it is stored as one packed text string and searched linearly. For words in the 750-entry dictionary, the runtime converts CMU ARPAbet tokens to the corresponding MicroPython SAM phoneme symbols and calls `speech.pronounce`; this makes the bundled dictionary drive the actual audible pronunciation. Words outside the list fall back to `speech.say`. Stress digits are mapped to SAM stress markers.
+## Receive text from the MakeCode controller
 
-## Custom pronunciation
+The firmware also listens on micro:bit radio group **42**. It reads MakeCode's raw radio string packets, extracts the string payload, and reassembles the controller's chunk format:
 
-Use `microbit_speech_api.set_custom_pronunciation("robot", "ROW4BAHT")` with SAM phoneme notation. Custom overrides are held in RAM for the current run; persistent editing/storage is a future enhancement. See the official MicroPython speech API for the complete SAM phoneme table and voice parameters.
+```text
+~<one-digit-message-id><one-digit-part-index><one-digit-part-count><text>
+```
 
-## Limits
+For example, `~400Hello wo` is part 0 of a three-part message with ID 4. Send no more than 8 message characters in each chunk, and no more than 4 chunks (32 characters total). This keeps each `radio.sendString` packet within MakeCode's 19-character limit.
 
-- This is a compact, robotic/formant voice, not recorded human speech or modern neural TTS.
-- Words in the 750-entry dictionary use the bundled CMU pronunciation converted to SAM phonemes. Words outside the list use the built-in English-to-phoneme conversion, which is approximate. Use SAM phonemes for custom pronunciation.
-- The 750-word list supports on-device lookup. Words outside it can still be attempted by the built-in speech translator.
-- The original MakeCode extension and `bridge.py` are retained as an optional host-bridge mode. They are not required for the on-device MicroPython speech program.
-- micro:bit V1 has much less RAM than V2. The complete 750-entry dictionary is primarily targeted at V2; on V1, use the speech demo without importing the full dictionary if memory is insufficient.
+The receiver parses the MakeCode packet header before processing the string. It does not treat the raw radio bytes as plain text.
+
+## Critical: MakeCode and MicroPython cannot run together
+
+This speech firmware is MicroPython. Flashing it replaces the MakeCode program on that micro:bit. The Maqueen Plus V2 MakeCode extension and its motor-control blocks will not run in this MicroPython program. If the same robot micro:bit must drive the Maqueen and speak, the Maqueen motor-control functions need a separate MicroPython port.
+
+## Speech and dictionary
+
+- `speech.say(text)` speaks ordinary English using the micro:bit's built-in SAM-derived synthesizer.
+- `speech.pronounce(phonemes)` speaks SAM phoneme strings.
+- Words found in the bundled packed dictionary use the stored CMU ARPAbet pronunciation converted to SAM phonemes.
+- Words not in the dictionary fall back to `speech.say`.
+- Custom SAM pronunciations added with `add_custom` are held in RAM for the current run.
+
+The voice is compact and robotic; it is not neural or recorded human speech.
+
+## Optional PC bridge
+
+`main.ts` and `bridge.py` remain available as a separate USB-connected host-TTS mode. That mode speaks through the computer, not through the micro:bit speaker. It is not required for this on-device firmware.
