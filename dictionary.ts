@@ -13,7 +13,13 @@ namespace EnglishSpeechDictionary {
     /** Return the stored ARPAbet pronunciation, or an empty string. */
     //% block="dictionary pronunciation for %word"
     export function lookup(word: string): string {
-        const target = word.toLowerCase().trim();
+        // Avoid relying on trim() in the MakeCode micro:bit subset.
+        let target = word.toLowerCase();
+        let start = 0;
+        let end = target.length;
+        while (start < end && target.charAt(start) == " ") start++;
+        while (end > start && target.charAt(end - 1) == " ") end--;
+        target = target.substr(start, end - start);
         const records = DATA.split("\n");
         for (let i = 0; i < records.length; i++) {
             const separator = records[i].indexOf("|");
