@@ -1,66 +1,79 @@
-# micro:bit English Speech Engine (1000 words)
+# micro:bit English Speech Engine
 
-A micro:bit English speech project with two paths: the MicroPython firmware (`main.py`) synthesizes speech directly on the micro:bit using its built-in `speech` module; the optional MakeCode extension and `bridge.py` provide a separate USB-connected host-TTS path.
+An on-device English speech engine for the BBC micro:bit. The primary firmware is MicroPython and uses the micro:bit's built-in `speech` synthesizer. On a micro:bit V2, speech plays through the board's built-in speaker. No PC speech bridge, cloud API, or external TTS service is required.
+
+The repository also retains an optional MakeCode-to-PC speech bridge. That is a separate mode; it is not used by the on-device speaker firmware.
+
+## Use the built-in micro:bit speaker
+
+### Hardware
+
+- **micro:bit V2:** built-in speaker; no extra speaker wiring is needed.
+- **micro:bit V1:** connect a small speaker or headphones between P0 and GND.
+
+### Install the on-device firmware
+
+1. Open the official [micro:bit Python Editor](https://python.microbit.org/).
+2. Create a MicroPython project for a micro:bit V2.
+3. Add both `main.py` and `onboard_dictionary.py` from this repository to the project.
+4. Flash the project to the robot's micro:bit V2.
+5. On reset, the board speaks a greeting. Press A for a greeting and B to cycle through demo words.
+6. Set the controller to radio group **42**. The robot firmware listens for MakeCode radio string packets and speaks completed text messages.
+
+### Radio message format
+
+The robot firmware receives MakeCode `radio.sendString` packets on group 42. It expects the controller's existing chunk format:
+
+```text
+~<message-id><part-index><part-count><text-chunk>
+```
+
+For example, the first packet of a three-part message with ID 4 is:
+
+```text
+~400Hello wo
+```
+
+Use chunks of at most 8 message characters. Each packet must be no longer than MakeCode's 19-character `radio.sendString` limit. The firmware reassembles up to 32 characters before speaking.
+
+### Important runtime limitation
+
+The on-device speech firmware is **MicroPython**. Flashing it replaces the MakeCode runtime on that micro:bit. The Maqueen Plus V2 MakeCode motor extension therefore cannot run alongside this speech program. To have the same board both drive the Maqueen and speak, the Maqueen motor-control code must also be ported to MicroPython. Do not expect MakeCode extensions such as `maqueenPlusV2` to work in MicroPython.
 
 ## Repository contents
 
-- `generate_project.py` — reproducible dictionary/data generator and ZIP packager.
-- `sound_units.csv` — exactly 100 sound units (24 consonants, 45 vowel/stress units, 31 optional diphone transitions).
-- `pronunciation_dictionary.csv` — exactly 1000 unique CMUdict-backed English entries.
-- `custom_pronunciations.csv` — custom entries.
-- `main.ts`, `dictionary.ts`, `pxt.json` — MakeCode extension; `dictionary.ts` now embeds all 1,000 word/pronunciation records and provides a lookup function.
-- `main.py` — on-device MicroPython speech firmware.
-- `onboard_dictionary.py` — compact 1000-word on-device lookup table.
-- `microbit_speech_api.py` — reusable on-device speech API.
-- `bridge.py` — USB serial + host computer TTS bridge.
-- `firmware/` — supplied HEX images, preserved unchanged.
-- `integration/`, `docs/`, `examples/`, `.github/` — integration boundary, documentation, examples, CI validation.
+- `main.py` — on-device MicroPython speech firmware with MakeCode radio text reception.
+- `onboard_dictionary.py` — packed on-device pronunciation dictionary.
+- `microbit_speech_api.py` — reusable MicroPython speech API.
+- `main.ts`, `dictionary.ts`, `pxt.json` — optional MakeCode extension for the USB-connected computer TTS bridge.
+- `bridge.py` — optional USB serial bridge that speaks through the computer's installed TTS.
+- `sound_units.csv`, `pronunciation_dictionary.csv`, `custom_pronunciations.csv` — pronunciation data.
+- `generate_project.py` — data generator and ZIP packager.
+- `firmware/` — supplied HEX files, preserved unchanged.
 
-## Generate and validate
+## Optional computer speech bridge
 
-```bash
-python -m pip install -r requirements-generator.txt
-python generate_project.py
-python generate_project.py --output generated
-python generate_project.py --validate
-python generate_project.py --zip
-```
-
-The generator uses CMUdict pronunciations and TextBlob's English spelling frequency list to select 1000 common words. Re-running it may update the word selection if upstream dependency datasets change; pin dependency versions for a frozen release.
-
-## Run the speech bridge
+The computer bridge is a separate alternative. It uses the computer's audio output, not the micro:bit speaker:
 
 ```bash
 python -m pip install -r requirements.txt
 python bridge.py --port COM3
 ```
 
-Replace `COM3` with the micro:bit serial port shown by your operating system. Keep the bridge running and the USB connection attached. On Linux, a system TTS backend such as eSpeak may also be required.
+Replace `COM3` with the micro:bit serial port. Keep the bridge running and the micro:bit connected by USB.
 
-## MakeCode
-
-Import this repository as a MakeCode extension from its Git URL. For local development install Node.js and PXT CLI, then run `pxt target microbit`, `pxt install`, and `pxt serve`. Static validation does not claim that PXT compilation has been performed; compile in the official MakeCode toolchain before publishing a release.
-
-## Pronunciation and limitations
-
-Pronunciations use CMU-style ARPAbet with vowel stress digits `0`, `1`, and `2`. The 100-unit inventory includes 31 optional diphone/coarticulation records; canonical dictionary sequences use individual phonemes and stressed vowels. The bridge validates and displays dictionary pronunciations, but `pyttsx3` speaks through the host OS TTS voice, which may not use the CSV phonemes directly.
-
-## Supplied firmware
-
-The two uploaded `.hex` images are retained byte-for-byte in `firmware/`. They are firmware binaries, not source code. Their precise target hardware and control protocol are not established by filename alone. Do not flash until device compatibility is confirmed. See `docs/FIRMWARE.md`.
-
-## GitHub publishing
-
-Create an empty GitHub repository, then from this folder run:
+## Generate and validate dictionary data
 
 ```bash
-git init
-git add .
-git commit -m "Initial micro:bit English Speech Engine"
-git branch -M main
-git remote add origin YOUR_GITHUB_REPOSITORY_URL
-git push -u origin main
+python -m pip install -r requirements-generator.txt
+python generate_project.py
+python generate_project.py --validate
+python generate_project.py --zip
 ```
+
+## Voice and pronunciation
+
+The MicroPython speech engine uses the SAM-derived `speech.say` and `speech.pronounce` functions. The voice is intentionally compact and robotic rather than neural or human-recorded speech. Voice settings are configured near the top of `main.py`.
 
 ## License
 
