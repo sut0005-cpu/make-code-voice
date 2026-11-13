@@ -14,6 +14,7 @@
  *   english_speech.dictionary_word_count()
  *   english_speech.set_rate(100)
  */
+//% color=#2673A8 icon="\uf0a1" block="English Speech"
 namespace englishSpeech {
     let rate = 100;
     let stopped = false;
