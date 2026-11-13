@@ -78,3 +78,14 @@ The MicroPython speech engine uses the SAM-derived `speech.say` and `speech.pron
 ## License
 
 MIT. The supplied firmware files are redistributed as user-provided originals; verify their own licensing/redistribution terms before public release.
+
+
+## Microsoft MakeCode Python: tonal speech mode
+
+The repository also includes an experimental **on-device tonal speech extension** for Microsoft MakeCode Python. It uses the 1,000-entry pronunciation dictionary with micro:bit V2 speaker tones. It does not require the computer bridge or an online API.
+
+- Install this repository from **MakeCode → Extensions**.
+- Read [MAKECODE_TONAL_SPEECH.md](MAKECODE_TONAL_SPEECH.md) for setup and Python examples.
+- The tone-based output is robotic and coded; it is not natural spoken English. Vowels are pitched tones and consonants are short tone cues.
+- This mode can coexist in one MakeCode project with the official DFRobot Maqueen Plus V2 extension.
+
