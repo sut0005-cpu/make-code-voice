@@ -1,122 +1,221 @@
 /**
- * English Speech Engine for micro:bit (host-backed edition).
+ * On-device tonal English speech for MakeCode Python on micro:bit V2.
  *
- * The micro:bit sends commands over its USB serial connection.
- * A companion computer runs bridge.py, which looks up the pronunciation
- * and speaks through the computer's audio output using its installed TTS.
- * This design avoids placing a 1000-word dictionary in constrained
- * micro:bit RAM and does not pretend the micro:bit has a built-in speaker.
+ * Uses the bundled 1,000-word CMU-ARPAbet dictionary and the micro:bit
+ * music tone API. This is a tonal/phoneme-coded voice, NOT a formant or
+ * natural-language synthesizer: consonants are short tone cues and vowels
+ * are pitched syllable centres. It is intended as an experimental audible
+ * approximation. A listener will not hear ordinary human speech.
+ *
+ * Python API (MakeCode Python):
+ *   english_speech.speak_text("Hello there")
+ *   english_speech.speak_word("robot")
+ *   english_speech.lookup_pronunciation("robot")
+ *   english_speech.dictionary_word_count()
+ *   english_speech.set_rate(100)
  */
 namespace englishSpeech {
-    let connected = false;
+    let rate = 100;
+    let stopped = false;
 
-    function cleanField(value: string): string {
-        // MakeCode's micro:bit compiler does not support regular expressions.
-        // Replace protocol control characters with spaces using basic string APIs.
-        let cleaned = "";
-        for (let i = 0; i < value.length; i++) {
-            const ch = value.charAt(i);
-            if (ch == "\t" || ch == "\r" || ch == "\n") {
-                cleaned += " ";
-            } else {
-                cleaned += ch;
+    function cleanWord(word: string): string {
+        let result = "";
+        for (let i = 0; i < word.length; i++) {
+            const c = word.charAt(i).toLowerCase();
+            if ((c >= "a" && c <= "z") || (c >= "0" && c <= "9") || c == "'") {
+                result += c;
             }
         }
-        return cleaned;
+        return result;
     }
 
-    function sendCommand(command: string): void {
-        serial.writeLine("MBSPEECH\t" + EnglishSpeechDictionary.PROTOCOL_VERSION + "\t" + command);
+    function pronunciation(word: string): string {
+        const key = cleanWord(word);
+        if (key.length == 0) return "";
+        const data = EnglishSpeechDictionary.DATA;
+        let contentStart = -1;
+        if (data.substr(0, key.length + 1) == key + "|") {
+            contentStart = key.length + 1;
+        } else {
+            const marker = "\n" + key + "|";
+            const found = data.indexOf(marker);
+            if (found >= 0) contentStart = found + marker.length;
+        }
+        if (contentStart < 0) return "";
+        let end = data.indexOf("\n", contentStart);
+        if (end < 0) end = data.length;
+        return data.substr(contentStart, end - contentStart);
+    }
+
+    function duration(base: number): number {
+        return Math.max(20, Math.idiv(base * 100, rate));
+    }
+
+    function isVowel(phone: string): boolean {
+        const p = phone.substr(0, phone.length - 1);
+        return p == "AA" || p == "AE" || p == "AH" || p == "AO" ||
+            p == "AW" || p == "AY" || p == "EH" || p == "ER" ||
+            p == "EY" || p == "IH" || p == "IY" || p == "OW" ||
+            p == "OY" || p == "UH" || p == "UW";
+    }
+
+    function vowelPitch(phone: string): number {
+        const p = phone.substr(0, phone.length - 1);
+        if (p == "AA") return 440;
+        if (p == "AE") return 520;
+        if (p == "AH") return 390;
+        if (p == "AO") return 350;
+        if (p == "AW") return 560;
+        if (p == "AY") return 610;
+        if (p == "EH") return 490;
+        if (p == "ER") return 300;
+        if (p == "EY") return 650;
+        if (p == "IH") return 540;
+        if (p == "IY") return 740;
+        if (p == "OW") return 420;
+        if (p == "OY") return 580;
+        if (p == "UH") return 330;
+        if (p == "UW") return 690;
+        return 440;
+    }
+
+    function consonantPitch(phone: string): number {
+        const p = phone.substr(0, phone.length - 1);
+        if (p == "P" || p == "B") return 205;
+        if (p == "T" || p == "D") return 245;
+        if (p == "K" || p == "G") return 285;
+        if (p == "F" || p == "V") return 1250;
+        if (p == "TH" || p == "DH") return 1050;
+        if (p == "S" || p == "Z") return 1550;
+        if (p == "SH" || p == "ZH") return 1750;
+        if (p == "CH" || p == "JH") return 1450;
+        if (p == "M" || p == "N" || p == "NG") return 225;
+        if (p == "L" || p == "R" || p == "W" || p == "Y") return 320;
+        if (p == "HH") return 900;
+        return 400;
+    }
+
+    function playPhone(phone: string): void {
+        if (stopped) return;
+        if (phone.length == 0) return;
+        if (isVowel(phone)) {
+            const stress = phone.charAt(phone.length - 1);
+            let pitch = vowelPitch(phone);
+            let length = 105;
+            if (stress == "1") {
+                pitch = Math.idiv(pitch * 11, 10);
+                length = 175;
+            } else if (stress == "2") {
+                pitch = Math.idiv(pitch * 106, 100);
+                length = 145;
+            }
+            music.playTone(pitch, duration(length));
+            // A small glide makes the vowel centre less like a plain beep.
+            music.playTone(Math.idiv(pitch * 103, 100), duration(45));
+        } else {
+            // Brief consonant markers give the syllables a repeatable rhythm.
+            music.playTone(consonantPitch(phone), duration(32));
+        }
+        basic.pause(duration(12));
+    }
+
+    function spellUnknown(word: string): void {
+        // Predictable fallback: one short pitch per letter, not a fake claim
+        // that an unknown word has been correctly pronounced.
+        for (let i = 0; i < word.length; i++) {
+            const c = word.charCodeAt(i);
+            if (c >= 97 && c <= 122) {
+                music.playTone(300 + (c - 97) * 24, duration(65));
+                basic.pause(duration(25));
+            }
+        }
+    }
+
+    function speakOneWord(word: string): void {
+        const key = cleanWord(word);
+        if (key.length == 0) return;
+        const phones = pronunciation(key);
+        if (phones.length == 0) {
+            spellUnknown(key);
+            return;
+        }
+        const parts = phones.split(" ");
+        for (let i = 0; i < parts.length; i++) {
+            playPhone(parts[i]);
+        }
     }
 
     /**
-     * Initialise the serial speech connection.
-     */
-    //% block="initialise English speech engine"
-    //% weight=100
-    export function initialise(): void {
-        connected = true;
-        sendCommand("HELLO");
-    }
-
-    /**
-     * Ask the companion computer to speak a dictionary word.
+     * Speak one dictionary word through the micro:bit V2 speaker.
      */
     //% block="speak word %word"
-    //% weight=90
+    //% weight=100
     export function speakWord(word: string): void {
-        if (!connected) initialise();
-        sendCommand("SPEAK\t" + cleanField(word));
+        stopped = false;
+        speakOneWord(word);
     }
 
     /**
-     * Speak a sentence using the companion computer's TTS engine.
-     * This is host TTS, not on-device phoneme synthesis.
+     * Speak a sentence. Spaces and punctuation create natural pauses.
      */
     //% block="speak text %text"
-    //% weight=80
+    //% weight=95
     export function speakText(text: string): void {
-        if (!connected) initialise();
-        sendCommand("TEXT\t" + cleanField(text));
+        stopped = false;
+        let word = "";
+        for (let i = 0; i < text.length; i++) {
+            const c = text.charAt(i);
+            const lower = c.toLowerCase();
+            if ((lower >= "a" && lower <= "z") || (c >= "0" && c <= "9") || c == "'") {
+                word += lower;
+            } else {
+                if (word.length > 0) {
+                    speakOneWord(word);
+                    word = "";
+                    basic.pause(duration(55));
+                }
+                if (c == "." || c == "!" || c == "?") basic.pause(duration(260));
+                else if (c == "," || c == ";" || c == ":") basic.pause(duration(150));
+            }
+        }
+        if (word.length > 0) speakOneWord(word);
     }
 
     /**
-     * Request the ARPAbet and sound-unit sequence for a word.
-     * The companion bridge prints the result to its console.
+     * Look up and play the pronunciation of a word.
      */
-    //% block="look up pronunciation of %word"
-    //% weight=70
+    //% block="play pronunciation of %word"
+    //% weight=80
     export function lookupPronunciation(word: string): void {
-        if (!connected) initialise();
-        sendCommand("LOOKUP\t" + cleanField(word));
+        speakWord(word);
     }
 
     /**
-     * Add or replace a custom pronunciation.
-     * Example phones: "M AY1 K R OW2 B IH2 T".
+     * Set playback rate: 60 (slow) to 180 (fast). Default is 100.
      */
-    //% block="add custom pronunciation word %word phones %phones"
+    //% block="set speech rate to %value"
+    //% value.min=60 value.max=180
+    //% weight=70
+    export function setRate(value: number): void {
+        rate = Math.constrain(value, 60, 180);
+    }
+
+    /**
+     * Stop the current tone sequence.
+     */
+    //% block="stop tonal speech"
     //% weight=60
-    export function addCustomPronunciation(word: string, phones: string): void {
-        if (!connected) initialise();
-        sendCommand("CUSTOM\t" + cleanField(word) + "\t" + cleanField(phones));
+    export function stop(): void {
+        stopped = true;
+        music.stopAllSounds();
     }
 
     /**
-     * Remove a custom pronunciation for a word.
+     * Number of entries in the bundled pronunciation dictionary.
      */
-    //% block="remove custom pronunciation for %word"
+    //% block="speech dictionary word count"
     //% weight=50
-    export function removeCustomPronunciation(word: string): void {
-        if (!connected) initialise();
-        sendCommand("REMOVE\t" + cleanField(word));
-    }
-
-    /**
-     * Ask the bridge whether a word exists in either dictionary.
-     */
-    //% block="check dictionary for %word"
-    //% weight=40
-    export function checkWord(word: string): void {
-        if (!connected) initialise();
-        sendCommand("EXISTS\t" + cleanField(word));
-    }
-
-    /**
-     * Report the number of standard words in the bundled dictionary.
-     */
-    //% block="dictionary word count"
-    //% weight=30
     export function dictionaryWordCount(): number {
         return EnglishSpeechDictionary.WORD_COUNT;
-    }
-
-    /**
-     * Report the number of defined sound units.
-     */
-    //% block="sound unit count"
-    //% weight=20
-    export function soundUnitCount(): number {
-        return EnglishSpeechDictionary.SOUND_UNIT_COUNT;
     }
 }
