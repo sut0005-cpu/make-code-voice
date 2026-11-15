@@ -5,7 +5,7 @@
  * music tone API. This is a tonal/phoneme-coded voice, NOT a formant or
  * natural-language synthesizer: consonants are short tone cues and vowels
  * are pitched syllable centres. It is intended as an experimental audible
- * approximation. This version gives vowels a wider, distinct pitch identity while smoothing only the transitions.
+ * approximation. This version uses changing vowel contours, stress timing and different consonant rhythms to make the tone-coded output less like isolated beeps.
  *
  * Python API (MakeCode Python):
  *   english_speech.speak_text("Hello there")
@@ -94,58 +94,92 @@ namespace englishSpeech {
         return 252;
     }
 
-    // Consonants use separate lower/mid tone families to distinguish articulation.
+    // Tone-only MakeCode cannot create real vocal noise or simultaneous formants.
+    // These short pitch contours and consonant rhythms make phonemes less like
+    // isolated equal-length beeps and give syllables a more speech-like shape.
+    function vowelEndPitch(phone: string, startPitch: number): number {
+        const p = phoneBase(phone);
+        if (p == "AW") return 260;
+        if (p == "AY") return 405;
+        if (p == "EY") return 330;
+        if (p == "OW") return 375;
+        if (p == "OY") return 300;
+        if (p == "IY") return 385;
+        if (p == "UW") return 340;
+        if (p == "ER") return 235;
+        return startPitch + 12;
+    }
+
     function consonantPitch(phone: string): number {
         const p = phoneBase(phone);
-        if (p == "P" || p == "B" || p == "M" || p == "N" || p == "NG") return 155;
-        if (p == "T" || p == "D" || p == "K" || p == "G") return 185;
-        if (p == "F" || p == "V" || p == "TH" || p == "DH") return 225;
-        if (p == "S" || p == "Z" || p == "SH" || p == "ZH") return 295;
-        if (p == "CH" || p == "JH") return 265;
-        if (p == "L" || p == "R" || p == "W" || p == "Y") return 325;
-        if (p == "HH") return 205;
+        if (p == "P" || p == "B") return 175;
+        if (p == "T" || p == "D") return 205;
+        if (p == "K" || p == "G") return 235;
+        if (p == "M" || p == "N" || p == "NG") return 220;
+        if (p == "F" || p == "V") return 285;
+        if (p == "TH" || p == "DH") return 310;
+        if (p == "S" || p == "Z") return 365;
+        if (p == "SH" || p == "ZH") return 330;
+        if (p == "CH" || p == "JH") return 345;
+        if (p == "L" || p == "R") return 265;
+        if (p == "W" || p == "Y") return 300;
+        if (p == "HH") return 250;
         return 250;
     }
 
-    // Smooth transitions without flattening the differences between phonemes.
     function smoothPitch(target: number): number {
-        const maximumStep = 28;
+        const maximumStep = 55;
         if (target > lastPitch + maximumStep) target = lastPitch + maximumStep;
         if (target < lastPitch - maximumStep) target = lastPitch - maximumStep;
         lastPitch = target;
         return target;
     }
 
-    function playPhone(phone: string): void {
-        if (stopped || phone.length == 0) return;
-
-        if (isVowel(phone)) {
-            const stress = phone.charAt(phone.length - 1);
-            let pitch = vowelPitch(phone);
-            let length = 100;
-
-            // Stress is mainly expressed through duration, with only a
-            // gentle pitch lift rather than a large jump.
-            if (stress == "1") {
-                pitch = Math.idiv(pitch * 108, 100);
-                length = 165;
-            } else if (stress == "2") {
-                pitch = Math.idiv(pitch * 104, 100);
-                length = 135;
-            }
-
-            pitch = smoothPitch(pitch);
-            music.playTone(pitch, duration(length));
-
-            // Tiny glide: enough to soften the note edge without sounding
-            // like a separate musical note.
-            music.playTone(pitch + 6, duration(35));
-        } else {
-            const pitch = smoothPitch(consonantPitch(phone));
-            music.playTone(pitch, duration(24));
+    function playVowel(phone: string): void {
+        const stress = phone.charAt(phone.length - 1);
+        let startPitch = vowelPitch(phone);
+        let length = 115;
+        if (stress == "1") {
+            startPitch = Math.idiv(startPitch * 110, 100);
+            length = 185;
+        } else if (stress == "2") {
+            startPitch = Math.idiv(startPitch * 105, 100);
+            length = 145;
         }
 
-        basic.pause(duration(6));
+        const first = smoothPitch(startPitch);
+        const finish = smoothPitch(vowelEndPitch(phone, startPitch));
+        // A two-part vowel contour gives diphthongs a changing sound instead
+        // of holding one pitch like a notification beep.
+        music.playTone(first, duration(Math.idiv(length * 65, 100)));
+        music.playTone(finish, duration(Math.idiv(length * 35, 100)));
+    }
+
+    function playConsonant(phone: string): void {
+        const p = phoneBase(phone);
+        const pitch = smoothPitch(consonantPitch(phone));
+
+        // Stops have a tiny closure followed by a sharper release.
+        if (p == "P" || p == "T" || p == "K" || p == "B" || p == "D" || p == "G") {
+            basic.pause(duration(12));
+            music.playTone(pitch + 35, duration(18));
+        // Fricatives use two short pulses to suggest continuous airflow.
+        } else if (p == "F" || p == "V" || p == "TH" || p == "DH" ||
+                   p == "S" || p == "Z" || p == "SH" || p == "ZH" ||
+                   p == "CH" || p == "JH" || p == "HH") {
+            music.playTone(pitch, duration(20));
+            music.playTone(pitch + 22, duration(24));
+        // Nasals and liquids are longer and connect into the following vowel.
+        } else {
+            music.playTone(pitch, duration(48));
+        }
+    }
+
+    function playPhone(phone: string): void {
+        if (stopped || phone.length == 0) return;
+        if (isVowel(phone)) playVowel(phone);
+        else playConsonant(phone);
+        basic.pause(duration(4));
     }
 
     function spellUnknown(word: string): void {
