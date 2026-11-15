@@ -5,7 +5,8 @@
  * music tone API. This is a tonal/phoneme-coded voice, NOT a formant or
  * natural-language synthesizer: consonants are short tone cues and vowels
  * are pitched syllable centres. It is intended as an experimental audible
- * approximation. A listener will not hear ordinary human speech.
+ * approximation. This version uses a narrow, smoothed pitch range to reduce
+ * abrupt chromatic jumps and make vowel-to-vowel movement more connected.
  *
  * Python API (MakeCode Python):
  *   english_speech.speak_text("Hello there")
@@ -18,6 +19,7 @@
 namespace englishSpeech {
     let rate = 100;
     let stopped = false;
+    let lastPitch = 252;
 
     function cleanWord(word: string): string {
         let result = "";
@@ -52,82 +54,111 @@ namespace englishSpeech {
         return Math.max(20, Math.idiv(base * 100, rate));
     }
 
+    // ARPAbet vowels end in a stress digit (0, 1 or 2); consonants do not.
+    // Only remove the final character when it is actually a stress marker.
+    function phoneBase(phone: string): string {
+        if (phone.length > 0) {
+            const last = phone.charAt(phone.length - 1);
+            if (last == "0" || last == "1" || last == "2") {
+                return phone.substr(0, phone.length - 1);
+            }
+        }
+        return phone;
+    }
+
     function isVowel(phone: string): boolean {
-        const p = phone.substr(0, phone.length - 1);
+        const p = phoneBase(phone);
         return p == "AA" || p == "AE" || p == "AH" || p == "AO" ||
             p == "AW" || p == "AY" || p == "EH" || p == "ER" ||
             p == "EY" || p == "IH" || p == "IY" || p == "OW" ||
             p == "OY" || p == "UH" || p == "UW";
     }
 
+    // Vowels stay within a compact range (238–288 Hz). This reduces
+    // large pitch jumps while retaining small differences between vowels.
     function vowelPitch(phone: string): number {
-        const p = phone.substr(0, phone.length - 1);
-        if (p == "AA") return 440;
-        if (p == "AE") return 520;
-        if (p == "AH") return 390;
-        if (p == "AO") return 350;
-        if (p == "AW") return 560;
-        if (p == "AY") return 610;
-        if (p == "EH") return 490;
-        if (p == "ER") return 300;
-        if (p == "EY") return 650;
-        if (p == "IH") return 540;
-        if (p == "IY") return 740;
-        if (p == "OW") return 420;
-        if (p == "OY") return 580;
-        if (p == "UH") return 330;
-        if (p == "UW") return 690;
-        return 440;
+        const p = phoneBase(phone);
+        if (p == "AA") return 250;
+        if (p == "AE") return 265;
+        if (p == "AH") return 245;
+        if (p == "AO") return 240;
+        if (p == "AW") return 270;
+        if (p == "AY") return 278;
+        if (p == "EH") return 258;
+        if (p == "ER") return 248;
+        if (p == "EY") return 282;
+        if (p == "IH") return 263;
+        if (p == "IY") return 288;
+        if (p == "OW") return 252;
+        if (p == "OY") return 272;
+        if (p == "UH") return 242;
+        if (p == "UW") return 280;
+        return 252;
     }
 
+    // Consonants are short transitions near the vowel register, not
+    // piercing high-pitched beeps.
     function consonantPitch(phone: string): number {
-        const p = phone.substr(0, phone.length - 1);
-        if (p == "P" || p == "B") return 205;
-        if (p == "T" || p == "D") return 245;
-        if (p == "K" || p == "G") return 285;
-        if (p == "F" || p == "V") return 1250;
-        if (p == "TH" || p == "DH") return 1050;
-        if (p == "S" || p == "Z") return 1550;
-        if (p == "SH" || p == "ZH") return 1750;
-        if (p == "CH" || p == "JH") return 1450;
-        if (p == "M" || p == "N" || p == "NG") return 225;
-        if (p == "L" || p == "R" || p == "W" || p == "Y") return 320;
-        if (p == "HH") return 900;
-        return 400;
+        const p = phoneBase(phone);
+        if (p == "P" || p == "B" || p == "M" || p == "N" || p == "NG") return 238;
+        if (p == "T" || p == "D" || p == "K" || p == "G") return 244;
+        if (p == "F" || p == "V" || p == "TH" || p == "DH") return 250;
+        if (p == "S" || p == "Z" || p == "SH" || p == "ZH") return 258;
+        if (p == "CH" || p == "JH") return 254;
+        if (p == "L" || p == "R" || p == "W" || p == "Y") return 262;
+        if (p == "HH") return 246;
+        return 250;
+    }
+
+    // Limit each change to a small step so adjacent phonemes flow together.
+    function smoothPitch(target: number): number {
+        const maximumStep = 9;
+        if (target > lastPitch + maximumStep) target = lastPitch + maximumStep;
+        if (target < lastPitch - maximumStep) target = lastPitch - maximumStep;
+        lastPitch = target;
+        return target;
     }
 
     function playPhone(phone: string): void {
-        if (stopped) return;
-        if (phone.length == 0) return;
+        if (stopped || phone.length == 0) return;
+
         if (isVowel(phone)) {
             const stress = phone.charAt(phone.length - 1);
             let pitch = vowelPitch(phone);
-            let length = 105;
+            let length = 100;
+
+            // Stress is mainly expressed through duration, with only a
+            // gentle pitch lift rather than a large jump.
             if (stress == "1") {
-                pitch = Math.idiv(pitch * 11, 10);
-                length = 175;
+                pitch = Math.idiv(pitch * 104, 100);
+                length = 165;
             } else if (stress == "2") {
-                pitch = Math.idiv(pitch * 106, 100);
-                length = 145;
+                pitch = Math.idiv(pitch * 102, 100);
+                length = 135;
             }
+
+            pitch = smoothPitch(pitch);
             music.playTone(pitch, duration(length));
-            // A small glide makes the vowel centre less like a plain beep.
-            music.playTone(Math.idiv(pitch * 103, 100), duration(45));
+
+            // Tiny glide: enough to soften the note edge without sounding
+            // like a separate musical note.
+            music.playTone(pitch + 2, duration(25));
         } else {
-            // Brief consonant markers give the syllables a repeatable rhythm.
-            music.playTone(consonantPitch(phone), duration(32));
+            const pitch = smoothPitch(consonantPitch(phone));
+            music.playTone(pitch, duration(24));
         }
-        basic.pause(duration(12));
+
+        basic.pause(duration(6));
     }
 
     function spellUnknown(word: string): void {
-        // Predictable fallback: one short pitch per letter, not a fake claim
-        // that an unknown word has been correctly pronounced.
+        // Unknown words use a steady, neutral pulse instead of a rising
+        // alphabet-by-alphabet chromatic scale.
         for (let i = 0; i < word.length; i++) {
             const c = word.charCodeAt(i);
             if (c >= 97 && c <= 122) {
-                music.playTone(300 + (c - 97) * 24, duration(65));
-                basic.pause(duration(25));
+                music.playTone(250, duration(55));
+                basic.pause(duration(22));
             }
         }
     }
@@ -135,6 +166,7 @@ namespace englishSpeech {
     function speakOneWord(word: string): void {
         const key = cleanWord(word);
         if (key.length == 0) return;
+        lastPitch = 252;
         const phones = pronunciation(key);
         if (phones.length == 0) {
             spellUnknown(key);
