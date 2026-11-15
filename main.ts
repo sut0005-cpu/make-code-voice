@@ -5,8 +5,7 @@
  * music tone API. This is a tonal/phoneme-coded voice, NOT a formant or
  * natural-language synthesizer: consonants are short tone cues and vowels
  * are pitched syllable centres. It is intended as an experimental audible
- * approximation. This version uses a narrow, smoothed pitch range to reduce
- * abrupt chromatic jumps and make vowel-to-vowel movement more connected.
+ * approximation. This version gives vowels a wider, distinct pitch identity while smoothing only the transitions.
  *
  * Python API (MakeCode Python):
  *   english_speech.speak_text("Hello there")
@@ -19,7 +18,7 @@
 namespace englishSpeech {
     let rate = 100;
     let stopped = false;
-    let lastPitch = 252;
+    let lastPitch = 260;
 
     function cleanWord(word: string): string {
         let result = "";
@@ -74,45 +73,43 @@ namespace englishSpeech {
             p == "OY" || p == "UH" || p == "UW";
     }
 
-    // Vowels stay within a compact range (238–288 Hz). This reduces
-    // large pitch jumps while retaining small differences between vowels.
+    // Vowels use a wider register so each vowel has a recognisably different tone.
     function vowelPitch(phone: string): number {
         const p = phoneBase(phone);
-        if (p == "AA") return 250;
-        if (p == "AE") return 265;
-        if (p == "AH") return 245;
-        if (p == "AO") return 240;
-        if (p == "AW") return 270;
-        if (p == "AY") return 278;
-        if (p == "EH") return 258;
-        if (p == "ER") return 248;
-        if (p == "EY") return 282;
-        if (p == "IH") return 263;
-        if (p == "IY") return 288;
-        if (p == "OW") return 252;
-        if (p == "OY") return 272;
-        if (p == "UH") return 242;
-        if (p == "UW") return 280;
+        if (p == "AA") return 245;
+        if (p == "AE") return 300;
+        if (p == "AH") return 220;
+        if (p == "AO") return 205;
+        if (p == "AW") return 335;
+        if (p == "AY") return 365;
+        if (p == "EH") return 280;
+        if (p == "ER") return 255;
+        if (p == "EY") return 385;
+        if (p == "IH") return 315;
+        if (p == "IY") return 405;
+        if (p == "OW") return 270;
+        if (p == "OY") return 350;
+        if (p == "UH") return 230;
+        if (p == "UW") return 375;
         return 252;
     }
 
-    // Consonants are short transitions near the vowel register, not
-    // piercing high-pitched beeps.
+    // Consonants use separate lower/mid tone families to distinguish articulation.
     function consonantPitch(phone: string): number {
         const p = phoneBase(phone);
-        if (p == "P" || p == "B" || p == "M" || p == "N" || p == "NG") return 238;
-        if (p == "T" || p == "D" || p == "K" || p == "G") return 244;
-        if (p == "F" || p == "V" || p == "TH" || p == "DH") return 250;
-        if (p == "S" || p == "Z" || p == "SH" || p == "ZH") return 258;
-        if (p == "CH" || p == "JH") return 254;
-        if (p == "L" || p == "R" || p == "W" || p == "Y") return 262;
-        if (p == "HH") return 246;
+        if (p == "P" || p == "B" || p == "M" || p == "N" || p == "NG") return 155;
+        if (p == "T" || p == "D" || p == "K" || p == "G") return 185;
+        if (p == "F" || p == "V" || p == "TH" || p == "DH") return 225;
+        if (p == "S" || p == "Z" || p == "SH" || p == "ZH") return 295;
+        if (p == "CH" || p == "JH") return 265;
+        if (p == "L" || p == "R" || p == "W" || p == "Y") return 325;
+        if (p == "HH") return 205;
         return 250;
     }
 
-    // Limit each change to a small step so adjacent phonemes flow together.
+    // Smooth transitions without flattening the differences between phonemes.
     function smoothPitch(target: number): number {
-        const maximumStep = 9;
+        const maximumStep = 28;
         if (target > lastPitch + maximumStep) target = lastPitch + maximumStep;
         if (target < lastPitch - maximumStep) target = lastPitch - maximumStep;
         lastPitch = target;
@@ -130,10 +127,10 @@ namespace englishSpeech {
             // Stress is mainly expressed through duration, with only a
             // gentle pitch lift rather than a large jump.
             if (stress == "1") {
-                pitch = Math.idiv(pitch * 104, 100);
+                pitch = Math.idiv(pitch * 108, 100);
                 length = 165;
             } else if (stress == "2") {
-                pitch = Math.idiv(pitch * 102, 100);
+                pitch = Math.idiv(pitch * 104, 100);
                 length = 135;
             }
 
@@ -142,7 +139,7 @@ namespace englishSpeech {
 
             // Tiny glide: enough to soften the note edge without sounding
             // like a separate musical note.
-            music.playTone(pitch + 2, duration(25));
+            music.playTone(pitch + 6, duration(35));
         } else {
             const pitch = smoothPitch(consonantPitch(phone));
             music.playTone(pitch, duration(24));
@@ -166,7 +163,7 @@ namespace englishSpeech {
     function speakOneWord(word: string): void {
         const key = cleanWord(word);
         if (key.length == 0) return;
-        lastPitch = 252;
+        lastPitch = 260;
         const phones = pronunciation(key);
         if (phones.length == 0) {
             spellUnknown(key);
